@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #1890ff;
+        }
+
+        .role-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-switch select {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background-color: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background-color: #1890ff;
+            color: #fff;
+        }
+
+        .tab:hover {
+            background-color: #f0f5ff;
+            color: #1890ff;
+        }
+
+        .tab.active:hover {
+            background-color: #1890ff;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1890ff;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .search-bar {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-bar input,
+        .search-bar select {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .search-bar button {
+            padding: 8px 24px;
+            background-color: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .search-bar button:hover {
+            background-color: #40a9ff;
+        }
+
+        .job-list {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .job-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .job-item:hover {
+            background-color: #fafafa;
+        }
+
+        .job-item:last-child {
+            border-bottom: none;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .job-status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .job-status.active {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .job-status.closed {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        .job-meta {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .job-desc {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .detail-panel {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+
+        .detail-panel h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .detail-info {
+            margin-bottom: 24px;
+        }
+
+        .detail-info .item {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .detail-info .label {
+            width: 80px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-info .value {
+            flex: 1;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section p {
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .apply-form {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .apply-form h3 {
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .form-group button {
+            padding: 10px 32px;
+            background-color: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .form-group button:hover {
+            background-color: #40a9ff;
+        }
+
+        .application-list {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .application-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .application-item:last-child {
+            border-bottom: none;
+        }
+
+        .application-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .application-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .application-status-select {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .application-detail {
+            margin-bottom: 12px;
+        }
+
+        .application-detail .row {
+            display: flex;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .application-detail .row .label {
+            width: 80px;
+            color: #666;
+        }
+
+        .application-detail .row .value {
+            flex: 1;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            padding: 4px 12px;
+            background-color: #f0f5ff;
+            color: #1890ff;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .message-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .message-section h4 {
+            margin-bottom: 12px;
+        }
+
+        .message-list {
+            margin-bottom: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background-color: #fafafa;
+            border-radius: 4px;
+        }
+
+        .message-item.applicant {
+            background-color: #e6f7ff;
+            border-left: 4px solid #1890ff;
+        }
+
+        .message-item.recruiter {
+            background-color: #f6ffed;
+            border-left: 4px solid #52c41a;
+        }
+
+        .message-sender {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .message-content {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .message-input textarea {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            height: 60px;
+            resize: none;
+        }
+
+        .message-input button {
+            padding: 10px 24px;
+            background-color: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .message-input button:hover {
+            background-color: #40a9ff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .btn-back {
+            padding: 8px 16px;
+            background-color: #f5f5f5;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .btn-back:hover {
+            background-color: #e8e8e8;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .status-badge.communicating {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .status-badge.rejected {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .job-meta {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>招聘平台</h1>
+        <div class="role-switch">
+            <label>当前身份：</label>
+            <select id="roleSelect">
+                <option value="applicant">应聘方</option>
+                <option value="recruiter">招聘方</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="home">首页</button>
+            <button class="tab" data-tab="jobs">职位列表</button>
+            <button class="tab" data-tab="publish">发布职位</button>
+            <button class="tab" data-tab="applications">我的投递</button>
+            <button class="tab" data-tab="manage">投递管理</button>
+        </div>
+
+        <div id="statsSection" class="stats-grid">
+            <div class="stat-card">
+                <div class="number" id="statActiveJobs">0</div>
+                <div class="label">在招职位</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statTodayApplications">0</div>
+                <div class="label">今日投递</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statCommunicating">0</div>
+                <div class="label">沟通中</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statPending">0</div>
+                <div class="label">待处理</div>
+            </div>
+        </div>
+
+        <div id="homeSection">
+            <div class="search-bar">
+                <input type="text" id="searchTitle" placeholder="搜索职位名称">
+                <select id="searchCity">
+                    <option value="">全部城市</option>
+                    <option value="北京">北京</option>
+                    <option value="上海">上海</option>
+                    <option value="杭州">杭州</option>
+                    <option value="深圳">深圳</option>
+                </select>
+                <select id="searchStatus">
+                    <option value="">全部状态</option>
+                    <option value="active">招聘中</option>
+                    <option value="closed">已关闭</option>
+                </select>
+                <button id="searchBtn">搜索</button>
+            </div>
+
+            <div id="jobList" class="job-list"></div>
+        </div>
+
+        <div id="publishSection" style="display: none;">
+            <div class="detail-panel">
+                <h2>发布招聘信息</h2>
+                <div class="apply-form">
+                    <div class="form-group">
+                        <label>职位名称</label>
+                        <input type="text" id="publishTitle" placeholder="请输入职位名称">
+                    </div>
+                    <div class="form-group">
+                        <label>公司名称</label>
+                        <input type="text" id="publishCompany" placeholder="请输入公司名称">
+                    </div>
+                    <div class="form-group">
+                        <label>工作城市</label>
+                        <select id="publishCity">
+                            <option value="北京">北京</option>
+                            <option value="上海">上海</option>
+                            <option value="杭州">杭州</option>
+                            <option value="深圳">深圳</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>职位描述</label>
+                        <textarea id="publishDescription" placeholder="请输入职位描述"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>任职要求</label>
+                        <textarea id="publishRequirements" placeholder="请输入任职要求，每行一条"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button id="publishBtn">发布职位</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="applicationsSection" style="display: none;">
+            <div id="myApplicationsList" class="application-list"></div>
+        </div>
+
+        <div id="manageSection" style="display: none;">
+            <div id="manageApplicationsList" class="application-list"></div>
+        </div>
+
+        <div id="jobDetailSection" style="display: none;">
+            <button class="btn-back" id="backBtn">返回列表</button>
+            <div class="detail-panel" id="jobDetail"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        let currentRole = 'applicant';
+        let currentTab = 'home';
+        let jobs = [];
+        let applications = [];
+        let currentJobId = null;
+
+        const roleSelect = document.getElementById('roleSelect');
+        const tabs = document.querySelectorAll('.tab');
+        const statsSection = document.getElementById('statsSection');
+        const homeSection = document.getElementById('homeSection');
+        const publishSection = document.getElementById('publishSection');
+        const applicationsSection = document.getElementById('applicationsSection');
+        const manageSection = document.getElementById('manageSection');
+        const jobDetailSection = document.getElementById('jobDetailSection');
+
+        roleSelect.addEventListener('change', (e) => {
+            currentRole = e.target.value;
+            updateTabsVisibility();
+            if (currentTab === 'home' || currentTab === 'jobs') {
+                loadJobs();
+            } else if (currentTab === 'applications') {
+                loadMyApplications();
+            } else if (currentTab === 'manage') {
+                loadManageApplications();
+            }
+            loadStatistics();
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+                switchSection(currentTab);
+            });
+        });
+
+        function updateTabsVisibility() {
+            tabs.forEach(tab => {
+                const tabName = tab.dataset.tab;
+                if (currentRole === 'applicant') {
+                    if (tabName === 'publish' || tabName === 'manage') {
+                        tab.style.display = 'none';
+                    } else {
+                        tab.style.display = 'block';
+                    }
+                } else {
+                    if (tabName === 'applications') {
+                        tab.style.display = 'none';
+                    } else {
+                        tab.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        function switchSection(tab) {
+            homeSection.style.display = 'none';
+            publishSection.style.display = 'none';
+            applicationsSection.style.display = 'none';
+            manageSection.style.display = 'none';
+            jobDetailSection.style.display = 'none';
+            statsSection.style.display = 'none';
+
+            if (tab === 'home') {
+                statsSection.style.display = 'grid';
+                homeSection.style.display = 'block';
+                loadJobs();
+            } else if (tab === 'jobs') {
+                statsSection.style.display = 'grid';
+                homeSection.style.display = 'block';
+                loadJobs();
+            } else if (tab === 'publish') {
+                publishSection.style.display = 'block';
+            } else if (tab === 'applications') {
+                statsSection.style.display = 'grid';
+                applicationsSection.style.display = 'block';
+                loadMyApplications();
+            } else if (tab === 'manage') {
+                statsSection.style.display = 'grid';
+                manageSection.style.display = 'block';
+                loadManageApplications();
+            }
+            loadStatistics();
+        }
+
+        async function fetchApi(url, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${url}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { code: 500, message: '网络错误' };
+            }
+        }
+
+        async function loadStatistics() {
+            const result = await fetchApi('/statistics');
+            if (result.code === 200) {
+                const data = result.data;
+                document.getElementById('statActiveJobs').textContent = data.activeJobs;
+                document.getElementById('statTodayApplications').textContent = data.todayApplications;
+                document.getElementById('statCommunicating').textContent = data.communicatingCount;
+                document.getElementById('statPending').textContent = data.pendingApplications;
+            }
+        }
+
+        async function loadJobs(title = '', city = '', status = '') {
+            const params = new URLSearchParams();
+            if (title) params.append('title', title);
+            if (city) params.append('city', city);
+            if (status) params.append('status', status);
+
+            const result = await fetchApi(`/jobs?${params}`);
+            if (result.code === 200) {
+                jobs = result.data;
+                renderJobList(jobs);
+            }
+        }
+
+        function renderJobList(jobList) {
+            const container = document.getElementById('jobList');
+            if (jobList.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>暂无职位信息</p></div>';
+                return;
+            }
+
+            container.innerHTML = jobList.map(job => `
+                <div class="job-item" onclick="showJobDetail(${job.id})">
+                    <div class="job-header">
+                        <span class="job-title">${job.title}</span>
+                        <span class="job-status ${job.status}">${job.status === 'active' ? '招聘中' : '已关闭'}</span>
+                    </div>
+                    <div class="job-meta">
+                        <span>🏢 ${job.company}</span>
+                        <span>📍 ${job.city}</span>
+                    </div>
+                    <div class="job-desc">${job.description}</div>
+                </div>
+            `).join('');
+        }
+
+        async function showJobDetail(jobId) {
+            currentJobId = jobId;
+            const result = await fetchApi(`/jobs/${jobId}`);
+            if (result.code === 200) {
+                const job = result.data;
+                const appResult = await fetchApi(`/applications/job/${jobId}`);
+                const apps = appResult.code === 200 ? appResult.data : [];
+
+                homeSection.style.display = 'none';
+                publishSection.style.display = 'none';
+                applicationsSection.style.display = 'none';
+                manageSection.style.display = 'none';
+                statsSection.style.display = 'none';
+                jobDetailSection.style.display = 'block';
+
+                const requirements = job.requirements ? job.requirements.replace(/\n/g, '<br>') : '';
+
+                document.getElementById('jobDetail').innerHTML = `
+                    <h2>${job.title}</h2>
+                    <div class="detail-info">
+                        <div class="item"><span class="label">公司：</span><span class="value">${job.company}</span></div>
+                        <div class="item"><span class="label">城市：</span><span class="value">${job.city}</span></div>
+                        <div class="item"><span class="label">状态：</span><span class="value"><span class="status-badge ${job.status}">${job.status === 'active' ? '招聘中' : '已关闭'}</span></span></div>
+                    </div>
+                    <div class="section">
+                        <h3>职位描述</h3>
+                        <p>${job.description}</p>
+                    </div>
+                    <div class="section">
+                        <h3>任职要求</h3>
+                        <p>${requirements}</p>
+                    </div>
+                    <div class="section">
+                        <h3>投递记录 (${apps.length}人)</h3>
+                        <div>${renderApplications(apps)}</div>
+                    </div>
+                    ${currentRole === 'applicant' && job.status === 'active' ? `
+                        <div class="apply-form">
+                            <h3>投递简历</h3>
+                            <div class="form-group">
+                                <label>姓名</label>
+                                <input type="text" id="applyName" placeholder="请输入姓名">
+                            </div>
+                            <div class="form-group">
+                                <label>简历摘要</label>
+                                <textarea id="applySummary" placeholder="请简要介绍您的工作经历和优势"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>工作年限</label>
+                                <select id="applyYears">
+                                    <option value="0">应届毕业生</option>
+                                    <option value="1">1年</option>
+                                    <option value="2">2年</option>
+                                    <option value="3">3年</option>
+                                    <option value="5">5年</option>
+                                    <option value="10">10年以上</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>技能标签（逗号分隔）</label>
+                                <input type="text" id="applySkills" placeholder="如：Java, Spring Boot, MySQL">
+                            </div>
+                            <div class="form-group">
+                                <button onclick="submitApplication(${job.id})">投递简历</button>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+            }
+        }
+
+        function renderApplications(apps) {
+            if (apps.length === 0) {
+                return '<div class="empty-state"><p>暂无投递记录</p></div>';
+            }
+
+            return apps.map(app => `
+                <div class="application-item">
+                    <div class="application-header">
+                        <span class="application-name">${app.applicantName}</span>
+                        <span class="status-badge ${app.status}">${getStatusText(app.status)}</span>
+                    </div>
+                    <div class="application-detail">
+                        <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
+                        <div class="row"><span class="label">简历摘要：</span><span class="value">${app.resumeSummary}</span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
+                    </div>
+                    <div class="message-section">
+                        <h4>沟通消息</h4>
+                        <div class="message-list" id="messageList-${app.id}"></div>
+                        <div class="message-input">
+                            <textarea id="messageInput-${app.id}" placeholder="输入消息..."></textarea>
+                            <button onclick="sendMessage(${app.id}, '${currentRole}')">发送</button>
+                        </div>
+                    </div>
+                    ${currentRole === 'recruiter' ? `
+                        <div style="margin-top: 16px;">
+                            <select class="application-status-select" onchange="updateApplicationStatus(${app.id}, this.value)">
+                                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>待查看</option>
+                                <option value="communicating" ${app.status === 'communicating' ? 'selected' : ''}>沟通中</option>
+                                <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>不合适</option>
+                            </select>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const map = {
+                'pending': '待查看',
+                'communicating': '沟通中',
+                'rejected': '不合适'
+            };
+            return map[status] || status;
+        }
+
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr) return '';
+            const date = new Date(dateTimeStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        async function submitApplication(jobId) {
+            const name = document.getElementById('applyName').value;
+            const summary = document.getElementById('applySummary').value;
+            const years = parseInt(document.getElementById('applyYears').value);
+            const skills = document.getElementById('applySkills').value;
+
+            if (!name || !summary) {
+                alert('请填写姓名和简历摘要');
+                return;
+            }
+
+            const result = await fetchApi('/applications', {
+                method: 'POST',
+                body: JSON.stringify({
+                    jobId,
+                    applicantName: name,
+                    resumeSummary: summary,
+                    workYears: years,
+                    skills
+                })
+            });
+
+            if (result.code === 200) {
+                alert('投递成功！');
+                document.getElementById('applyName').value = '';
+                document.getElementById('applySummary').value = '';
+                document.getElementById('applySkills').value = '';
+                showJobDetail(jobId);
+                loadStatistics();
+            } else {
+                alert('投递失败：' + result.message);
+            }
+        }
+
+        async function updateApplicationStatus(applicationId, status) {
+            const result = await fetchApi(`/applications/${applicationId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+
+            if (result.code === 200) {
+                if (currentJobId) {
+                    showJobDetail(currentJobId);
+                } else {
+                    loadManageApplications();
+                }
+                loadStatistics();
+            } else {
+                alert('更新失败：' + result.message);
+            }
+        }
+
+        async function loadMyApplications() {
+            const result = await fetchApi('/applications');
+            if (result.code === 200) {
+                applications = result.data;
+                renderMyApplications(applications);
+            }
+        }
+
+        function renderMyApplications(apps) {
+            const container = document.getElementById('myApplicationsList');
+            if (apps.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>暂无投递记录</p></div>';
+                return;
+            }
+
+            container.innerHTML = apps.map(app => `
+                <div class="application-item" onclick="showApplicationDetail(${app.jobId}, ${app.id})">
+                    <div class="application-header">
+                        <span class="application-name">职位ID: ${app.jobId}</span>
+                        <span class="status-badge ${app.status}">${getStatusText(app.status)}</span>
+                    </div>
+                    <div class="application-detail">
+                        <div class="row"><span class="label">姓名：</span><span class="value">${app.applicantName}</span></div>
+                        <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadManageApplications() {
+            const result = await fetchApi('/applications');
+            if (result.code === 200) {
+                applications = result.data;
+                renderManageApplications(applications);
+            }
+        }
+
+        function renderManageApplications(apps) {
+            const container = document.getElementById('manageApplicationsList');
+            if (apps.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📥</div><p>暂无收到的投递</p></div>';
+                return;
+            }
+
+            container.innerHTML = apps.map(app => `
+                <div class="application-item">
+                    <div class="application-header">
+                        <span class="application-name">${app.applicantName} - 职位ID: ${app.jobId}</span>
+                        <select class="application-status-select" onchange="updateApplicationStatus(${app.id}, this.value)">
+                            <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>待查看</option>
+                            <option value="communicating" ${app.status === 'communicating' ? 'selected' : ''}>沟通中</option>
+                            <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>不合适</option>
+                        </select>
+                    </div>
+                    <div class="application-detail">
+                        <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
+                        <div class="row"><span class="label">简历摘要：</span><span class="value">${app.resumeSummary}</span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
+                    </div>
+                    <div class="message-section">
+                        <h4>沟通消息</h4>
+                        <div class="message-list" id="manageMessageList-${app.id}"></div>
+                        <div class="message-input">
+                            <textarea id="manageMessageInput-${app.id}" placeholder="输入消息..."></textarea>
+                            <button onclick="sendMessage(${app.id}, 'recruiter')">发送</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            apps.forEach(app => {
+                loadMessages(app.id, `manageMessageList-${app.id}`);
+            });
+        }
+
+        async function showApplicationDetail(jobId, applicationId) {
+            showJobDetail(jobId);
+            setTimeout(() => {
+                loadMessages(applicationId, `messageList-${applicationId}`);
+            }, 100);
+        }
+
+        async function loadMessages(applicationId, containerId) {
+            const result = await fetchApi(`/messages/application/${applicationId}`);
+            if (result.code === 200) {
+                const messages = result.data;
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = messages.map(msg => `
+                        <div class="message-item ${msg.senderRole}">
+                            <div class="message-sender">${msg.senderRole === 'applicant' ? '应聘方' : '招聘方'}</div>
+                            <div class="message-content">${msg.content}</div>
+                            <div class="message-time">${formatDateTime(msg.createdAt)}</div>
+                        </div>
+                    `).join('');
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+        }
+
+        async function sendMessage(applicationId, senderRole) {
+            const inputId = currentRole === 'applicant' && currentTab !== 'manage' 
+                ? `messageInput-${applicationId}` 
+                : `manageMessageInput-${applicationId}`;
+            const content = document.getElementById(inputId).value;
+
+            if (!content.trim()) {
+                alert('请输入消息内容');
+                return;
+            }
+
+            const result = await fetchApi('/messages', {
+                method: 'POST',
+                body: JSON.stringify({
+                    applicationId,
+                    senderRole,
+                    content: content.trim()
+                })
+            });
+
+            if (result.code === 200) {
+                document.getElementById(inputId).value = '';
+                const listId = currentRole === 'applicant' && currentTab !== 'manage'
+                    ? `messageList-${applicationId}`
+                    : `manageMessageList-${applicationId}`;
+                loadMessages(applicationId, listId);
+            } else {
+                alert('发送失败：' + result.message);
+            }
+        }
+
+        async function publishJob() {
+            const title = document.getElementById('publishTitle').value;
+            const company = document.getElementById('publishCompany').value;
+            const city = document.getElementById('publishCity').value;
+            const description = document.getElementById('publishDescription').value;
+            const requirements = document.getElementById('publishRequirements').value;
+
+            if (!title || !company || !description || !requirements) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            const result = await fetchApi('/jobs', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title,
+                    company,
+                    city,
+                    description,
+                    requirements
+                })
+            });
+
+            if (result.code === 200) {
+                alert('发布成功！');
+                document.getElementById('publishTitle').value = '';
+                document.getElementById('publishCompany').value = '';
+                document.getElementById('publishDescription').value = '';
+                document.getElementById('publishRequirements').value = '';
+                loadStatistics();
+                loadJobs();
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === 'home') {
+                        tab.click();
+                    }
+                });
+            } else {
+                alert('发布失败：' + result.message);
+            }
+        }
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            jobDetailSection.style.display = 'none';
+            statsSection.style.display = 'grid';
+            homeSection.style.display = 'block';
+            loadJobs();
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const title = document.getElementById('searchTitle').value;
+            const city = document.getElementById('searchCity').value;
+            const status = document.getElementById('searchStatus').value;
+            loadJobs(title, city, status);
+        });
+
+        document.getElementById('publishBtn').addEventListener('click', publishJob);
+
+        updateTabsVisibility();
+        switchSection('home');
+    </script>
+</body>
+</html>
