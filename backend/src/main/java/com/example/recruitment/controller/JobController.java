@@ -36,6 +36,17 @@ public class JobController {
         return ApiResponse.success(job);
     }
 
+    @GetMapping("/{id}/detail")
+    public ApiResponse<com.example.recruitment.dto.JobDetailResponse> getJobDetailWithApplication(
+            @PathVariable Long id,
+            @RequestParam(required = false) String applicantName) {
+        com.example.recruitment.dto.JobDetailResponse response = recruitmentService.getJobDetailWithApplication(id, applicantName);
+        if (response == null) {
+            return ApiResponse.error(404, "职位不存在");
+        }
+        return ApiResponse.success(response);
+    }
+
     @PostMapping
     public ApiResponse<Job> createJob(@RequestBody JobCreateRequest request) {
         Job job = recruitmentService.createJob(request);

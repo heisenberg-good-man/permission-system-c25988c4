@@ -29,6 +29,7 @@
         .header h1 {
             font-size: 24px;
             color: #1890ff;
+            cursor: pointer;
         }
 
         .role-switch {
@@ -191,12 +192,12 @@
             font-weight: 500;
         }
 
-        .job-status.active {
+        .job-status.active, .job-status.ACTIVE {
             background-color: #f6ffed;
             color: #52c41a;
         }
 
-        .job-status.closed {
+        .job-status.closed, .job-status.CLOSED {
             background-color: #fff2f0;
             color: #ff4d4f;
         }
@@ -407,12 +408,12 @@
             border-radius: 4px;
         }
 
-        .message-item.applicant {
+        .message-item.applicant, .message-item.APPLICANT {
             background-color: #e6f7ff;
             border-left: 4px solid #1890ff;
         }
 
-        .message-item.recruiter {
+        .message-item.recruiter, .message-item.EMPLOYER {
             background-color: #f6ffed;
             border-left: 4px solid #52c41a;
         }
@@ -496,19 +497,82 @@
             font-weight: 500;
         }
 
-        .status-badge.pending {
+        .status-badge.pending, .status-badge.PENDING {
             background-color: #fff7e6;
             color: #fa8c16;
         }
 
-        .status-badge.communicating {
+        .status-badge.communicating, .status-badge.COMMUNICATING {
             background-color: #e6f7ff;
             color: #1890ff;
         }
 
-        .status-badge.rejected {
+        .status-badge.rejected, .status-badge.REJECTED {
             background-color: #fff2f0;
             color: #ff4d4f;
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+        }
+
+        .notification.success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+
+        .notification.error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+
+        .notification.warning {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            color: #faad14;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .my-application-section {
+            background-color: #fafafa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #1890ff;
+        }
+
+        .my-application-section h3 {
+            margin-bottom: 12px;
+            color: #1890ff;
+        }
+
+        .form-error {
+            color: #ff4d4f;
+            font-size: 12px;
+            margin-top: 4px;
         }
 
         @media (max-width: 768px) {
@@ -529,8 +593,10 @@
     </style>
 </head>
 <body>
+    <div id="notificationContainer"></div>
+
     <div class="header">
-        <h1>招聘平台</h1>
+        <h1 id="logo" onclick="goHome()">招聘平台</h1>
         <div class="role-switch">
             <label>当前身份：</label>
             <select id="roleSelect">
@@ -542,11 +608,11 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab active" data-tab="home">首页</button>
-            <button class="tab" data-tab="jobs">职位列表</button>
-            <button class="tab" data-tab="publish">发布职位</button>
-            <button class="tab" data-tab="applications">我的投递</button>
-            <button class="tab" data-tab="manage">投递管理</button>
+            <button class="tab active" data-tab="home" onclick="switchTab('home')">首页</button>
+            <button class="tab" data-tab="jobs" onclick="switchTab('jobs')">职位列表</button>
+            <button class="tab" data-tab="publish" onclick="switchTab('publish')">发布职位</button>
+            <button class="tab" data-tab="applications" onclick="switchTab('applications')">我的投递</button>
+            <button class="tab" data-tab="manage" onclick="switchTab('manage')">投递管理</button>
         </div>
 
         <div id="statsSection" class="stats-grid">
@@ -580,26 +646,29 @@
                 </select>
                 <select id="searchStatus">
                     <option value="">全部状态</option>
-                    <option value="active">招聘中</option>
-                    <option value="closed">已关闭</option>
+                    <option value="ACTIVE">招聘中</option>
+                    <option value="CLOSED">已关闭</option>
                 </select>
-                <button id="searchBtn">搜索</button>
+                <button id="searchBtn" onclick="handleSearch()">搜索</button>
             </div>
 
             <div id="jobList" class="job-list"></div>
         </div>
 
         <div id="publishSection" style="display: none;">
+            <button class="btn-back" onclick="switchTab('home')">返回首页</button>
             <div class="detail-panel">
                 <h2>发布招聘信息</h2>
                 <div class="apply-form">
                     <div class="form-group">
                         <label>职位名称</label>
                         <input type="text" id="publishTitle" placeholder="请输入职位名称">
+                        <div class="form-error" id="errorPublishTitle"></div>
                     </div>
                     <div class="form-group">
                         <label>公司名称</label>
                         <input type="text" id="publishCompany" placeholder="请输入公司名称">
+                        <div class="form-error" id="errorPublishCompany"></div>
                     </div>
                     <div class="form-group">
                         <label>工作城市</label>
@@ -613,28 +682,32 @@
                     <div class="form-group">
                         <label>职位描述</label>
                         <textarea id="publishDescription" placeholder="请输入职位描述"></textarea>
+                        <div class="form-error" id="errorPublishDescription"></div>
                     </div>
                     <div class="form-group">
                         <label>任职要求</label>
                         <textarea id="publishRequirements" placeholder="请输入任职要求，每行一条"></textarea>
+                        <div class="form-error" id="errorPublishRequirements"></div>
                     </div>
                     <div class="form-group">
-                        <button id="publishBtn">发布职位</button>
+                        <button onclick="publishJob()">发布职位</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="applicationsSection" style="display: none;">
+            <button class="btn-back" onclick="switchTab('home')">返回首页</button>
             <div id="myApplicationsList" class="application-list"></div>
         </div>
 
         <div id="manageSection" style="display: none;">
+            <button class="btn-back" onclick="switchTab('home')">返回首页</button>
             <div id="manageApplicationsList" class="application-list"></div>
         </div>
 
         <div id="jobDetailSection" style="display: none;">
-            <button class="btn-back" id="backBtn">返回列表</button>
+            <button class="btn-back" onclick="switchTab('home')">返回列表</button>
             <div class="detail-panel" id="jobDetail"></div>
         </div>
     </div>
@@ -647,6 +720,7 @@
         let jobs = [];
         let applications = [];
         let currentJobId = null;
+        let currentApplicantName = '';
 
         const roleSelect = document.getElementById('roleSelect');
         const tabs = document.querySelectorAll('.tab');
@@ -670,14 +744,17 @@
             loadStatistics();
         });
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentTab = tab.dataset.tab;
-                switchSection(currentTab);
-            });
-        });
+        function goHome() {
+            switchTab('home');
+        }
+
+        function switchTab(tabName) {
+            tabs.forEach(t => t.classList.remove('active'));
+            const activeTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
+            if (activeTab) activeTab.classList.add('active');
+            currentTab = tabName;
+            switchSection(currentTab);
+        }
 
         function updateTabsVisibility() {
             tabs.forEach(tab => {
@@ -726,6 +803,21 @@
                 loadManageApplications();
             }
             loadStatistics();
+        }
+
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span>${type === 'success' ? '✓' : type === 'error' ? '✗' : '⚠'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
         }
 
         async function fetchApi(url, options = {}) {
@@ -779,7 +871,7 @@
                 <div class="job-item" onclick="showJobDetail(${job.id})">
                     <div class="job-header">
                         <span class="job-title">${job.title}</span>
-                        <span class="job-status ${job.status}">${job.status === 'active' ? '招聘中' : '已关闭'}</span>
+                        <span class="job-status ${job.status}">${job.status === 'ACTIVE' ? '招聘中' : '已关闭'}</span>
                     </div>
                     <div class="job-meta">
                         <span>🏢 ${job.company}</span>
@@ -792,9 +884,16 @@
 
         async function showJobDetail(jobId) {
             currentJobId = jobId;
-            const result = await fetchApi(`/jobs/${jobId}`);
+            const params = new URLSearchParams();
+            if (currentRole === 'applicant') {
+                params.append('applicantName', currentApplicantName);
+            }
+            const result = await fetchApi(`/jobs/${jobId}/detail?${params}`);
+            
             if (result.code === 200) {
-                const job = result.data;
+                const data = result.data;
+                const job = data.job;
+                const myApplication = data.myApplication;
                 const appResult = await fetchApi(`/applications/job/${jobId}`);
                 const apps = appResult.code === 200 ? appResult.data : [];
 
@@ -807,12 +906,35 @@
 
                 const requirements = job.requirements ? job.requirements.replace(/\n/g, '<br>') : '';
 
+                let myApplicationHtml = '';
+                if (myApplication) {
+                    myApplicationHtml = `
+                        <div class="my-application-section">
+                            <h3>我的投递状态</h3>
+                            <div class="application-detail">
+                                <div class="row"><span class="label">状态：</span><span class="value"><span class="status-badge ${myApplication.status}">${getStatusText(myApplication.status)}</span></span></div>
+                                <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(myApplication.createdAt)}</span></div>
+                                <div class="row"><span class="label">简历摘要：</span><span class="value">${myApplication.resumeSummary}</span></div>
+                                <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${Array.isArray(myApplication.skills) ? myApplication.skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : myApplication.skills}</div></span></div>
+                            </div>
+                            <div class="message-section">
+                                <h4>沟通消息</h4>
+                                <div class="message-list" id="messageList-${myApplication.id}"></div>
+                                <div class="message-input">
+                                    <textarea id="messageInput-${myApplication.id}" placeholder="输入消息..."></textarea>
+                                    <button onclick="sendMessage(${myApplication.id}, 'APPLICANT')">发送</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 document.getElementById('jobDetail').innerHTML = `
                     <h2>${job.title}</h2>
                     <div class="detail-info">
                         <div class="item"><span class="label">公司：</span><span class="value">${job.company}</span></div>
                         <div class="item"><span class="label">城市：</span><span class="value">${job.city}</span></div>
-                        <div class="item"><span class="label">状态：</span><span class="value"><span class="status-badge ${job.status}">${job.status === 'active' ? '招聘中' : '已关闭'}</span></span></div>
+                        <div class="item"><span class="label">状态：</span><span class="value"><span class="status-badge ${job.status}">${job.status === 'ACTIVE' ? '招聘中' : '已关闭'}</span></span></div>
                     </div>
                     <div class="section">
                         <h3>职位描述</h3>
@@ -822,20 +944,23 @@
                         <h3>任职要求</h3>
                         <p>${requirements}</p>
                     </div>
+                    ${myApplicationHtml}
                     <div class="section">
                         <h3>投递记录 (${apps.length}人)</h3>
                         <div>${renderApplications(apps)}</div>
                     </div>
-                    ${currentRole === 'applicant' && job.status === 'active' ? `
+                    ${currentRole === 'applicant' && job.status === 'ACTIVE' && !myApplication ? `
                         <div class="apply-form">
                             <h3>投递简历</h3>
                             <div class="form-group">
                                 <label>姓名</label>
-                                <input type="text" id="applyName" placeholder="请输入姓名">
+                                <input type="text" id="applyName" placeholder="请输入姓名" value="${currentApplicantName}">
+                                <div class="form-error" id="errorApplyName"></div>
                             </div>
                             <div class="form-group">
                                 <label>简历摘要</label>
                                 <textarea id="applySummary" placeholder="请简要介绍您的工作经历和优势"></textarea>
+                                <div class="form-error" id="errorApplySummary"></div>
                             </div>
                             <div class="form-group">
                                 <label>工作年限</label>
@@ -858,6 +983,12 @@
                         </div>
                     ` : ''}
                 `;
+
+                if (myApplication) {
+                    setTimeout(() => {
+                        loadMessages(myApplication.id, `messageList-${myApplication.id}`);
+                    }, 100);
+                }
             }
         }
 
@@ -875,7 +1006,7 @@
                     <div class="application-detail">
                         <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
                         <div class="row"><span class="label">简历摘要：</span><span class="value">${app.resumeSummary}</span></div>
-                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${Array.isArray(app.skills) ? app.skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : app.skills}</div></span></div>
                         <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
                     </div>
                     <div class="message-section">
@@ -883,15 +1014,15 @@
                         <div class="message-list" id="messageList-${app.id}"></div>
                         <div class="message-input">
                             <textarea id="messageInput-${app.id}" placeholder="输入消息..."></textarea>
-                            <button onclick="sendMessage(${app.id}, '${currentRole}')">发送</button>
+                            <button onclick="sendMessage(${app.id}, '${currentRole === 'applicant' ? 'APPLICANT' : 'EMPLOYER'}')">发送</button>
                         </div>
                     </div>
                     ${currentRole === 'recruiter' ? `
                         <div style="margin-top: 16px;">
                             <select class="application-status-select" onchange="updateApplicationStatus(${app.id}, this.value)">
-                                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>待查看</option>
-                                <option value="communicating" ${app.status === 'communicating' ? 'selected' : ''}>沟通中</option>
-                                <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>不合适</option>
+                                <option value="PENDING" ${app.status === 'PENDING' ? 'selected' : ''}>待查看</option>
+                                <option value="COMMUNICATING" ${app.status === 'COMMUNICATING' ? 'selected' : ''}>沟通中</option>
+                                <option value="REJECTED" ${app.status === 'REJECTED' ? 'selected' : ''}>不合适</option>
                             </select>
                         </div>
                     ` : ''}
@@ -901,6 +1032,9 @@
 
         function getStatusText(status) {
             const map = {
+                'PENDING': '待查看',
+                'COMMUNICATING': '沟通中',
+                'REJECTED': '不合适',
                 'pending': '待查看',
                 'communicating': '沟通中',
                 'rejected': '不合适'
@@ -915,15 +1049,24 @@
         }
 
         async function submitApplication(jobId) {
-            const name = document.getElementById('applyName').value;
-            const summary = document.getElementById('applySummary').value;
+            const name = document.getElementById('applyName').value.trim();
+            const summary = document.getElementById('applySummary').value.trim();
             const years = parseInt(document.getElementById('applyYears').value);
-            const skills = document.getElementById('applySkills').value;
+            const skills = document.getElementById('applySkills').value.trim();
 
-            if (!name || !summary) {
-                alert('请填写姓名和简历摘要');
+            document.getElementById('errorApplyName').textContent = '';
+            document.getElementById('errorApplySummary').textContent = '';
+
+            if (!name) {
+                document.getElementById('errorApplyName').textContent = '请输入姓名';
                 return;
             }
+            if (!summary) {
+                document.getElementById('errorApplySummary').textContent = '请填写简历摘要';
+                return;
+            }
+
+            currentApplicantName = name;
 
             const result = await fetchApi('/applications', {
                 method: 'POST',
@@ -932,19 +1075,19 @@
                     applicantName: name,
                     resumeSummary: summary,
                     workYears: years,
-                    skills
+                    skills: skills.split(',').map(s => s.trim()).filter(s => s)
                 })
             });
 
             if (result.code === 200) {
-                alert('投递成功！');
+                showNotification('投递成功！');
                 document.getElementById('applyName').value = '';
                 document.getElementById('applySummary').value = '';
                 document.getElementById('applySkills').value = '';
                 showJobDetail(jobId);
                 loadStatistics();
             } else {
-                alert('投递失败：' + result.message);
+                showNotification('投递失败：' + result.message, 'error');
             }
         }
 
@@ -955,6 +1098,7 @@
             });
 
             if (result.code === 200) {
+                showNotification('状态更新成功');
                 if (currentJobId) {
                     showJobDetail(currentJobId);
                 } else {
@@ -962,7 +1106,7 @@
                 }
                 loadStatistics();
             } else {
-                alert('更新失败：' + result.message);
+                showNotification('更新失败：' + result.message, 'error');
             }
         }
 
@@ -984,13 +1128,13 @@
             container.innerHTML = apps.map(app => `
                 <div class="application-item" onclick="showApplicationDetail(${app.jobId}, ${app.id})">
                     <div class="application-header">
-                        <span class="application-name">职位ID: ${app.jobId}</span>
+                        <span class="application-name">${app.jobTitle || '职位ID: ' + app.jobId}</span>
                         <span class="status-badge ${app.status}">${getStatusText(app.status)}</span>
                     </div>
                     <div class="application-detail">
                         <div class="row"><span class="label">姓名：</span><span class="value">${app.applicantName}</span></div>
                         <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
-                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${Array.isArray(app.skills) ? app.skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : app.skills}</div></span></div>
                         <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
                     </div>
                 </div>
@@ -1015,17 +1159,17 @@
             container.innerHTML = apps.map(app => `
                 <div class="application-item">
                     <div class="application-header">
-                        <span class="application-name">${app.applicantName} - 职位ID: ${app.jobId}</span>
+                        <span class="application-name">${app.applicantName} - ${app.jobTitle || '职位ID: ' + app.jobId}</span>
                         <select class="application-status-select" onchange="updateApplicationStatus(${app.id}, this.value)">
-                            <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>待查看</option>
-                            <option value="communicating" ${app.status === 'communicating' ? 'selected' : ''}>沟通中</option>
-                            <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>不合适</option>
+                            <option value="PENDING" ${app.status === 'PENDING' ? 'selected' : ''}>待查看</option>
+                            <option value="COMMUNICATING" ${app.status === 'COMMUNICATING' ? 'selected' : ''}>沟通中</option>
+                            <option value="REJECTED" ${app.status === 'REJECTED' ? 'selected' : ''}>不合适</option>
                         </select>
                     </div>
                     <div class="application-detail">
                         <div class="row"><span class="label">工作年限：</span><span class="value">${app.workYears}年</span></div>
                         <div class="row"><span class="label">简历摘要：</span><span class="value">${app.resumeSummary}</span></div>
-                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${app.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')}</div></span></div>
+                        <div class="row"><span class="label">技能：</span><span class="value"><div class="skills">${Array.isArray(app.skills) ? app.skills.map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : app.skills}</div></span></div>
                         <div class="row"><span class="label">投递时间：</span><span class="value">${formatDateTime(app.createdAt)}</span></div>
                     </div>
                     <div class="message-section">
@@ -1033,7 +1177,7 @@
                         <div class="message-list" id="manageMessageList-${app.id}"></div>
                         <div class="message-input">
                             <textarea id="manageMessageInput-${app.id}" placeholder="输入消息..."></textarea>
-                            <button onclick="sendMessage(${app.id}, 'recruiter')">发送</button>
+                            <button onclick="sendMessage(${app.id}, 'EMPLOYER')">发送</button>
                         </div>
                     </div>
                 </div>
@@ -1059,7 +1203,7 @@
                 if (container) {
                     container.innerHTML = messages.map(msg => `
                         <div class="message-item ${msg.senderRole}">
-                            <div class="message-sender">${msg.senderRole === 'applicant' ? '应聘方' : '招聘方'}</div>
+                            <div class="message-sender">${msg.senderName || (msg.senderRole === 'APPLICANT' || msg.senderRole === 'applicant' ? '应聘方' : '招聘方')}</div>
                             <div class="message-content">${msg.content}</div>
                             <div class="message-time">${formatDateTime(msg.createdAt)}</div>
                         </div>
@@ -1073,44 +1217,82 @@
             const inputId = currentRole === 'applicant' && currentTab !== 'manage' 
                 ? `messageInput-${applicationId}` 
                 : `manageMessageInput-${applicationId}`;
-            const content = document.getElementById(inputId).value;
+            const content = document.getElementById(inputId).value.trim();
 
-            if (!content.trim()) {
-                alert('请输入消息内容');
+            if (!content) {
+                showNotification('请输入消息内容', 'warning');
                 return;
             }
 
-            const result = await fetchApi('/messages', {
+            const senderName = senderRole === 'EMPLOYER' ? '招聘方' : currentApplicantName || '应聘方';
+
+            const result = await fetchApi(`/messages/application/${applicationId}`, {
                 method: 'POST',
                 body: JSON.stringify({
                     applicationId,
                     senderRole,
-                    content: content.trim()
+                    senderName,
+                    content
                 })
             });
 
             if (result.code === 200) {
+                showNotification('消息发送成功');
                 document.getElementById(inputId).value = '';
                 const listId = currentRole === 'applicant' && currentTab !== 'manage'
                     ? `messageList-${applicationId}`
                     : `manageMessageList-${applicationId}`;
                 loadMessages(applicationId, listId);
+                
+                if (currentJobId) {
+                    setTimeout(() => showJobDetail(currentJobId), 500);
+                } else if (currentTab === 'manage') {
+                    setTimeout(() => loadManageApplications(), 500);
+                }
+                loadStatistics();
             } else {
-                alert('发送失败：' + result.message);
+                showNotification('发送失败：' + result.message, 'error');
             }
         }
 
-        async function publishJob() {
-            const title = document.getElementById('publishTitle').value;
-            const company = document.getElementById('publishCompany').value;
-            const city = document.getElementById('publishCity').value;
-            const description = document.getElementById('publishDescription').value;
-            const requirements = document.getElementById('publishRequirements').value;
+        function handleSearch() {
+            const title = document.getElementById('searchTitle').value;
+            const city = document.getElementById('searchCity').value;
+            const status = document.getElementById('searchStatus').value;
+            loadJobs(title, city, status);
+        }
 
-            if (!title || !company || !description || !requirements) {
-                alert('请填写完整信息');
-                return;
+        async function publishJob() {
+            const title = document.getElementById('publishTitle').value.trim();
+            const company = document.getElementById('publishCompany').value.trim();
+            const city = document.getElementById('publishCity').value;
+            const description = document.getElementById('publishDescription').value.trim();
+            const requirements = document.getElementById('publishRequirements').value.trim();
+
+            document.getElementById('errorPublishTitle').textContent = '';
+            document.getElementById('errorPublishCompany').textContent = '';
+            document.getElementById('errorPublishDescription').textContent = '';
+            document.getElementById('errorPublishRequirements').textContent = '';
+
+            let isValid = true;
+            if (!title) {
+                document.getElementById('errorPublishTitle').textContent = '请输入职位名称';
+                isValid = false;
             }
+            if (!company) {
+                document.getElementById('errorPublishCompany').textContent = '请输入公司名称';
+                isValid = false;
+            }
+            if (!description) {
+                document.getElementById('errorPublishDescription').textContent = '请输入职位描述';
+                isValid = false;
+            }
+            if (!requirements) {
+                document.getElementById('errorPublishRequirements').textContent = '请输入任职要求';
+                isValid = false;
+            }
+
+            if (!isValid) return;
 
             const result = await fetchApi('/jobs', {
                 method: 'POST',
@@ -1119,46 +1301,36 @@
                     company,
                     city,
                     description,
-                    requirements
+                    requirements,
+                    position: title,
+                    department: '技术部',
+                    minSalary: 15,
+                    maxSalary: 30,
+                    experienceMin: 1,
+                    experienceMax: 5,
+                    education: '本科',
+                    employerName: '招聘方',
+                    requiredSkills: ['Java', 'Spring'],
+                    responsibilities: description
                 })
             });
 
             if (result.code === 200) {
-                alert('发布成功！');
+                showNotification('发布成功！');
                 document.getElementById('publishTitle').value = '';
                 document.getElementById('publishCompany').value = '';
                 document.getElementById('publishDescription').value = '';
                 document.getElementById('publishRequirements').value = '';
                 loadStatistics();
                 loadJobs();
-                tabs.forEach(tab => {
-                    if (tab.dataset.tab === 'home') {
-                        tab.click();
-                    }
-                });
+                switchTab('home');
             } else {
-                alert('发布失败：' + result.message);
+                showNotification('发布失败：' + result.message, 'error');
             }
         }
 
-        document.getElementById('backBtn').addEventListener('click', () => {
-            jobDetailSection.style.display = 'none';
-            statsSection.style.display = 'grid';
-            homeSection.style.display = 'block';
-            loadJobs();
-        });
-
-        document.getElementById('searchBtn').addEventListener('click', () => {
-            const title = document.getElementById('searchTitle').value;
-            const city = document.getElementById('searchCity').value;
-            const status = document.getElementById('searchStatus').value;
-            loadJobs(title, city, status);
-        });
-
-        document.getElementById('publishBtn').addEventListener('click', publishJob);
-
         updateTabsVisibility();
-        switchSection('home');
+        switchTab('home');
     </script>
 </body>
 </html>

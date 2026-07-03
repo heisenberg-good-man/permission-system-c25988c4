@@ -243,6 +243,19 @@ public class RecruitmentServiceImpl implements RecruitmentService {
     }
 
     @Override
+    public com.example.recruitment.dto.JobDetailResponse getJobDetailWithApplication(Long jobId, String applicantName) {
+        Job job = jobs.get(jobId);
+        if (job == null) {
+            return null;
+        }
+        Application myApplication = applications.values().stream()
+                .filter(app -> app.getJobId().equals(jobId) && applicantName != null && applicantName.equals(app.getApplicantName()))
+                .findFirst()
+                .orElse(null);
+        return new com.example.recruitment.dto.JobDetailResponse(job, myApplication);
+    }
+
+    @Override
     public Job createJob(String title, String company, String city, String description, String requirements) {
         return null;
     }
@@ -389,6 +402,14 @@ public class RecruitmentServiceImpl implements RecruitmentService {
                 now
         );
         messages.put(message.getId(), message);
+
+        Application application = applications.get(applicationId);
+        if (application != null && "EMPLOYER".equals(senderRole) && "PENDING".equals(application.getStatus())) {
+            application.setStatus("COMMUNICATING");
+            application.setUpdatedAt(now);
+            applications.put(applicationId, application);
+        }
+
         return message;
     }
 

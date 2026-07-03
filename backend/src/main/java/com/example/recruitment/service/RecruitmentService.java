@@ -13,6 +13,7 @@ public interface RecruitmentService {
     List<Job> getAllJobs();
     List<Job> searchJobs(String title, String city, String status);
     Job getJobById(Long id);
+    com.example.recruitment.dto.JobDetailResponse getJobDetailWithApplication(Long jobId, String applicantName);
     Job createJob(String title, String company, String city, String description, String requirements);
     Job createJob(JobCreateRequest request);
     void deleteJob(Long id);
